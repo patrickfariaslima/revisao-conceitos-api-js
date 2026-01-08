@@ -1,11 +1,12 @@
 import NaoEncontrado from "../erros/nao-encontrado.js";
-import { autores } from "../models/autor-model.js";
+import { autores } from "../models/index.js";
 
 class AutorController {
   static async listarAutores(req, res, next) {
     try {
-      const autoresResultado = await autores.find({});
-      res.status(200).json(autoresResultado);
+      const autoresResultado = autores.find({});
+      req.resultado = autoresResultado;
+      next();
     } catch (error) {
       next(error);
     }
@@ -16,9 +17,9 @@ class AutorController {
       const id = req.params.id;
 
       const autorResultado = await autores.findById(id);
-      if (!autorResultado ) next(new NaoEncontrado("Autor não encontrado."));
-      
-      res.status(200).json(autorResultado);
+      if (!autorResultado) next(new NaoEncontrado("Autor não encontrado."));
+
+      res.status(200).send(autorResultado);
     } catch (error) {
       next(error);
     }
@@ -29,7 +30,7 @@ class AutorController {
       let autor = new autores(req.body);
       const autorResultado = await autor.save();
 
-      res.status(201).json({
+      res.status(201).send({
         message: "Autor cadastrado com sucesso!",
         autor: autorResultado,
       });
@@ -43,7 +44,7 @@ class AutorController {
       const id = req.params.id;
       const autorAtualizado = await autores.findByIdAndUpdate(id, req.body);
       if (!autorAtualizado) next(new NaoEncontrado("Autor não encontrado."));
-      res.status(200).json({ message: "Autor atualizado com sucesso!" });
+      res.status(200).send({ message: "Autor atualizado com sucesso!" });
     } catch (error) {
       next(error);
     }
@@ -53,8 +54,9 @@ class AutorController {
     try {
       const id = req.params.id;
       const autorDeletado = await autores.findByIdAndDelete(id);
-      if (!autorDeletado) next(new NaoEncontrado("Autor não encontrado para deletar."));
-      res.status(200).json({ message: "Autor deletado com sucesso!" });
+      if (!autorDeletado)
+        next(new NaoEncontrado("Autor não encontrado para deletar."));
+      res.status(200).send({ message: "Autor deletado com sucesso!" });
     } catch (error) {
       next(error);
     }
